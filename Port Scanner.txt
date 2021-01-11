@@ -1,0 +1,79 @@
+# Python3
+#called out imports for the program
+import socket
+import os
+from datetime import datetime
+import time
+
+#Configuring the time out, and self port scan
+class SConnect:
+    def __init__(self, ip, port=None):
+        self.ip = ip
+        self.port = port
+        self.address = (self.ip, self.port)
+        self.s_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s_connection.settimeout(5)
+
+    def portscan(self):
+        return self.s_connection.connect_ex(self.address)
+
+#defining the initial input values for reference later on.
+def main():
+    print("\nHello and welcome to the Port Scanner, enter the IP Address that you want to scan below!")
+    userip = input("\nIP Address:")
+    MinRange = int(input('Enter Starting Port Number: '))
+    MaxRange = int(input('Enter Ending Port Number: '))
+    response = os.system("ping -n 1 " + userip)
+
+    # and then check the IP Address response...
+    if response == 0:
+        print(userip, 'is up!')
+    else:
+        print(userip, 'is down!')
+        f = open("scanoutput.txt","w")
+        f.write(userip + "is down!")
+        f.close()
+        exit()
+
+    print("\nScanning now, please wait for scan to complete!")
+    open_count = 0
+    closed_count = 0
+
+    f = open("scanoutput.txt", "w")
+    f.write("Port Scanner User Report: " + "\n")
+    f.write("\nIP Address: " + userip + "\n")
+    f.write("\nStarting Port: " + str(MinRange) + "\n")
+    f.write("Ending Port: " + str(MaxRange) + "\n")
+    f.write(" " + "\n")
+    f.close()
+
+#This section will run through the ports listed above and output the open or closed label per port scanned.
+    if userip is not None:
+        for p in range(MinRange, MaxRange + 1, 1):
+            c = SConnect(userip, p)
+            if c.portscan() == 0:
+                print("Port {}: open".format(p))
+                open_count += 1
+                #append report to only output open ports, ran the write function in the loop.
+                f = open("scanoutput.txt","a")
+                f.write("Port {}: open".format(p) + "\n")
+                f.close()
+            else:
+                print("Port {}: closed".format(p))
+                closed_count += 1
+    else:
+        print("Scan failed, terminating.\n")
+
+#This portion is supposed to output the completion time of the scan, and the total time of the scan.
+if __name__ == '__main__':
+    # mm/dd/YY H:M:S
+    now = datetime.now()
+    dt_string = now.strftime("%d-%B-%Y %H:%M:%S")
+    start_time = time.time()
+    main()
+    print("Scan Completed on: ", str(dt_string))
+    print("Total Scan Time: %.2f seconds" % (time.time() - start_time))
+    f = open("scanoutput.txt", "a")
+    f.write("\nScan Completed on: "+dt_string+"\n")
+    f.write("Total Scan Time: %.2f seconds" % (time.time() - start_time)+'\n')
+    f.close()
